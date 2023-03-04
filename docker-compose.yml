@@ -1,0 +1,158 @@
+services:
+  traefik:
+    image: traefik
+    ports:
+      - "8080:80"
+      - "8443:443"
+    depends_on:
+      - product
+      - user
+      - auth
+      - order
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./conf.d:/etc/traefik/conf.d"
+    environment:
+      TZ: Asia/Bangkok
+    command:
+      - "--providers.file=true"
+      - "--providers.file.directory=/etc/traefik/conf.d"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web-80.address=:80"
+      - "--entrypoints.web-443.address=:443"
+
+  auth:
+    build:
+      context: .
+      dockerfile: ./cmd/auth/Dockerfile
+    image: neversitup-test/auth
+    ports:
+      - "8001:8001"
+    depends_on:
+      - db
+      - user
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api_auth.rule=PathPrefix(`/auth`)"
+      - "traefik.http.routers.api_auth.entrypoints=web-80"
+      - "traefik.http.services.whoami_8443.loadbalancer.server.port=8001"
+    environment:
+      TZ: Asia/Bangkok
+      GO_ENV: development
+      APP_PORT: 8001
+      DB_DRIVER: mysql
+      DB_CONN_TIME: 1h
+      DB_MAX_CONN: 100
+      DB_MIN_CONN: 10
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ecom
+      DB_USER: ecom
+      DB_PASSWORD: SecureUserPasswd
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_TIME: 1h
+
+  user:
+    build:
+      context: .
+      dockerfile: ./cmd/user/Dockerfile
+    image: neversitup-test/user
+    ports:
+      - "8002:8002"
+    depends_on:
+      - db
+      - product
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api_auth.rule=PathPrefix(`/api/v1/user`)"
+      - "traefik.http.routers.api_auth.entrypoints=web-80"
+      - "traefik.http.services.whoami_8443.loadbalancer.server.port=8002"
+    environment:
+      TZ: Asia/Bangkok
+      GO_ENV: development
+      APP_PORT: 8002
+      DB_DRIVER: mysql
+      DB_CONN_TIME: 1h
+      DB_MAX_CONN: 100
+      DB_MIN_CONN: 10
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ecom
+      DB_USER: ecom
+      DB_PASSWORD: SecureUserPasswd
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_USER: admin
+      ADMIN_PASSWORD: SecureAdminPasswd
+
+  product:
+    build:
+      context: .
+      dockerfile: ./cmd/product/Dockerfile
+    image: neversitup-test/product
+    ports:
+      - "8003:8003"
+    depends_on:
+      - db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api_auth.rule=PathPrefix(`/api/v1/product`)"
+      - "traefik.http.routers.api_auth.entrypoints=web-80"
+      - "traefik.http.services.whoami_8443.loadbalancer.server.port=8003"
+    environment:
+      TZ: Asia/Bangkok
+      GO_ENV: development
+      APP_PORT: 8003
+      DB_DRIVER: mysql
+      DB_CONN_TIME: 1h
+      DB_MAX_CONN: 100
+      DB_MIN_CONN: 10
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ecom
+      DB_USER: ecom
+      JWT_SECRET: ${JWT_SECRET}
+
+  order:
+    build:
+      context: .
+      dockerfile: ./cmd/order/Dockerfile
+    image: neversitup-test/order
+    ports:
+      - "8004:8004"
+    depends_on:
+      - db
+      - product
+      - user
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api_auth.rule=PathPrefix(`/api/v1/order`)"
+      - "traefik.http.routers.api_auth.entrypoints=web-80"
+      - "traefik.http.services.whoami_8443.loadbalancer.server.port=8004"
+    environment:
+      TZ: Asia/Bangkok
+      GO_ENV: development
+      APP_PORT: 8004
+      DB_DRIVER: mysql
+      DB_CONN_TIME: 1h
+      DB_MAX_CONN: 100
+      DB_MIN_CONN: 10
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ecom
+      DB_USER: ecom
+      JWT_SECRET: ${JWT_SECRET}
+
+  db:
+    image: mariadb
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - ./local-data/db:/var/lib/mysql
+    environment:
+      TZ: Asia/Bangkok
+      MARIADB_AUTO_UPGRADE: true
+      MARIADB_ROOT_PASSWORD: SecureRootPasswd
+      MARIADB_DATABASE: ecom
+      MARIADB_USER: ecom
+      MARIADB_PASSWORD: SecureUserPasswd

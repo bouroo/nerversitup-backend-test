@@ -1,0 +1,13 @@
+GO_ENV: development
+TZ: Asia/Bangkok
+APP_PORT: 8003
+DB_DRIVER: sqlite
+DB_CONN_TIME: 1h
+DB_MAX_CONN: 100
+DB_MIN_CONN: 10
+DB_HOST: 
+DB_PORT: 
+DB_NAME: ./local-data/product.db
+DB_USER: 
+DB_PASSWORD: SecureUserPasswd
+JWT_SECRET: jDeEGDawX6c9bvNQmMJqzWVoHrCH5G8pRBJ5WLDh9pWtn7y59Hbx2NDiJq99yikR
