@@ -9,6 +9,7 @@ import (
 
 func (u *orderUsecase) CreateOrder(email string, orderForm models.PostOrder) (orders []models.TbOrder, err error) {
 
+	var totalPrice float64
 	orderItems := make([]models.OrderItem, 0)
 	// recheck product in order_items
 	for _, orderItem := range orderForm.OrderItems {
@@ -23,6 +24,7 @@ func (u *orderUsecase) CreateOrder(email string, orderForm models.PostOrder) (or
 				Amount:    orderItem.Amount,
 				Price:     product.Price,
 			})
+			totalPrice += float64(orderItem.Amount) * product.Price
 		}
 	}
 
@@ -31,6 +33,7 @@ func (u *orderUsecase) CreateOrder(email string, orderForm models.PostOrder) (or
 		return
 	}
 
+	orderForm.TotalPrice = totalPrice
 	orderForm.OrderItems = orderItems
 
 	order, err := orderForm.ToTbOrder(email)

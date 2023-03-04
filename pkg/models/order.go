@@ -23,6 +23,7 @@ type TbOrder struct {
 	Email      string         `json:"email" gorm:"size:64;index"`
 	Status     string         `json:"status" gorm:"size:16;default:pending;index;check:status IN ('pending','paid','shipped','cancelled')"`
 	OrderItems datatypes.JSON `json:"order_items" gorm:""`
+	TotalPrice float64        `json:"total_price" gorm:""`
 	CreatedAt  sql.NullTime   `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt  sql.NullTime   `json:"updated_at" gorm:"autoUpdateTime"`
 	DeletedAt  gorm.DeletedAt `json:"deleted_at" gorm:"index"`
@@ -51,12 +52,14 @@ type PostOrder struct {
 	Email      string      `json:"email"`
 	Status     string      `json:"status"`
 	OrderItems []OrderItem `json:"order_items"`
+	TotalPrice float64     `json:"total_price"`
 }
 
 func (c *PostOrder) ToTbOrder(email string) (order TbOrder, err error) {
 	order = TbOrder{
-		Email:  email,
-		Status: c.Status,
+		Email:      email,
+		Status:     c.Status,
+		TotalPrice: c.TotalPrice,
 	}
 	orderItems, err := json.Marshal(c.OrderItems)
 	if err != nil {

@@ -14,11 +14,11 @@ Create E-commerce web-services for 1 vendor using a microservices architecture
 - [x] Login flow
 ### User management
 - [x] Profile viewer
-- [ ] Order history
+- [x] Order history
 ### Product management
 - [x] Product list viewer
 - [x] Product detail viewer
 ### Order management
-- [ ] Make new order
-- [ ] Cancel order
-- [ ] Oruder Summary
+- [x] Make new order
+- [x] Cancel order
+- [x] Order Summary
