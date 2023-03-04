@@ -142,6 +142,7 @@ services:
       DB_NAME: ecom
       DB_USER: ecom
       JWT_SECRET: ${JWT_SECRET}
+      PRODUCT_SERVICE: http://product:8003
 
   db:
     image: mariadb
